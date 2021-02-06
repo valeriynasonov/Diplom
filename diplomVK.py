@@ -1,14 +1,7 @@
 import requests
 import json
 import os
-from pprint import pprint
 import alive
-from alive_progress import alive_bar
-import time
-with alive_bar(count) as bar:
-    for i in range(count):
-        bar()
-        time.sleep(1)
 user_id = input("Введите id пользователя")
 token_vk = input("Введите токен от Вконтакте")
 token_disk = input("Введите токен от Яндекс.Диск")
@@ -18,16 +11,12 @@ url = " "
 like = " "
 count = 0
 create_folder = requests.put(
-    "https://cloud-api.yandex.net/v1/disk/resources",
-    params={
-        "path": "/PHOTOYOU",
-        "overwrite": "true"
-    },
-    headers={"Authorization": token_disk})
-resp_albums = requests.get(
-    "https://api.vk.com/method/photos.getAlbums/",
-    params={
-        "owner_id":
+"https://cloud-api.yandex.net/v1/disk/resources",
+params={"path": "/PHOTOYOU",
+        "overwrite": "true"},
+headers={"Authorization": token_disk})
+resp_albums = requests.get("https://api.vk.com/method/photos.getAlbums/",
+params={"owner_id":
         user_id,
         "access_token":
         token_vk,
@@ -39,8 +28,8 @@ if "error" in resp_albums:
 elif resp_albums["response"]["count"] == 0:
     print("У пользователя нет альбомов с фотографиями")
 else:
-    for element in resp_albums["response"]["items"]:
-        resp_url = requests.get(
+        for element in resp_albums["response"]["items"]:
+            resp_url = requests.get(
             "https://api.vk.com/method/photos.get/",
             params={
                 "owner_id":
@@ -55,9 +44,9 @@ else:
                 "v":
                 "5.126"
             }).json()
-        if "error" in resp_url:
-            print("Ошибка:", resp_url["error"]["error_msg"])
-            continue
+            if "error" in resp_url:
+                print("Ошибка:", resp_url["error"]["error_msg"])
+                continue
         else:
             count += resp_url["response"]["count"]
             list_of_height = []
@@ -80,9 +69,18 @@ else:
                         dict[url] = like
                         with open("PHOTO_USERS1", "w") as f:
                             json.dump(list, f, ensure_ascii = True, indent = 2)
+for k, v in dict.items():
                         create_file = requests.post(
                         "https://cloud-api.yandex.net/v1/disk/resources/upload",
-                        params={"path": "/PHOTOYOU/" + like,
+                        params={"path": "/PHOTOYOU/" + v,
                         "url": k},
                         headers={"Authorization": token_disk})
+from alive_progress import alive_bar
+import time
+with alive_bar(count) as bar:
+    for i in range(count):
+        bar()
+        time.sleep(1)
+
+
 
